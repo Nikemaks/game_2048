@@ -23,7 +23,7 @@ const colorMap: { [k: number]: string } = {
 })
 export class GameComponent implements OnInit {
 
-  keyEventCodeMap: { [type: string]: string } = {
+  keyEventCodeMap: { [type: string]: keyof GameService } = {
     ArrowRight: 'right',
     ArrowLeft: 'left',
     ArrowDown: 'down',
@@ -48,9 +48,19 @@ export class GameComponent implements OnInit {
 
   @HostListener('window:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
-    if (this.keyEventCodeMap[event.code]) {
-      //TODO: Why don't work?
-      this.gameService[this.keyEventCodeMap[event.code]]();
+    switch (this.keyEventCodeMap[event.code]) {
+      case this.keyEventCodeMap.ArrowRight:
+        this.gameService.right();
+        break;
+      case this.keyEventCodeMap.ArrowLeft:
+        this.gameService.left();
+        break;
+      case this.keyEventCodeMap.ArrowDown:
+        this.gameService.down();
+        break;
+      case this.keyEventCodeMap.ArrowUp:
+        this.gameService.up();
+        break;
     }
   }
 
