@@ -19,11 +19,19 @@ export class GameService {
     return this.items.map(item => item.row * 10 + item.col);
   }
 
+  scores = 0;
   theEnd = false;
   items: Item[] = [];
 
   constructor() {
     this.generateAvailableCells();
+    this.generateItems();
+  }
+
+  resetGame() {
+    this.scores = 0;
+    this.items = [];
+    this.theEnd = false;
     this.generateItems();
   }
 
@@ -48,11 +56,10 @@ export class GameService {
     dimY: 'col' | 'row' = 'col',
     reverse = false) {
 
-    if (!this.canIMove(dimX)){
+    if (this.theEnd || !this.canIMove(dimX, false, reverse)) {
       return;
     }
     this.clearDeletedItems();
-
 
 
     const mergedItems: Item[] = [];
@@ -96,6 +103,7 @@ export class GameService {
       }
     }
 
+    this.scores += mergedItems.reduce((acc, item) => acc + item.value, 0);
     this.items = [...this.items, ...mergedItems];
 
     this.generateItems();
@@ -125,25 +133,46 @@ export class GameService {
   }
 
   private thisIsTheEnd(): boolean {
-    return this.canIMove('row') || this.canIMove('col');
+    return !this.canIMove('row') && !this.canIMove('col');
   }
 
-  private canIMove(dir: 'row' | 'col') {
+  private canIMove(dimX: 'row' | 'col', skipDir = true, forward = false) {
+    const dimY = dimX === 'row' ? 'col' : 'row';
     for (let x = 1; x <= this.size; x++) {
-      const items = this.items.filter(item => !item.isOnDelete && item[dir] === x);
-      if (items.length !== this.size) {
-        return true;
-      }
+      const items = this.items
+        .filter(item => !item.isOnDelete && item[dimX] === x)
+        .sort((a, b) => a[dimY] - b[dimY]);
 
-      let prevValue = 0;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].value === prevValue) {
+      if (items.length !== this.size) {
+        if (skipDir) {
           return true;
         }
 
-        prevValue = items[i].value;
+        const length = items.length; // кол-во items
+        const lockedPositions: number[] = [];
+
+        const start = forward ? this.size + 1 - length : 1;
+        const end = forward ? this.size : length;
+        for (let i = start; i <= end; i++) {
+          lockedPositions.push(i);
+        }
+
+        if (items.find(item => !lockedPositions.includes(item[dimY]))) {
+          return true;
+        }
       }
+
+      let prevValue = 0;
+
+      for (const item of items) {
+        if (item.value === prevValue) {
+          return true;
+        }
+        prevValue = item.value;
+      }
+
     }
+
     return false;
   }
 

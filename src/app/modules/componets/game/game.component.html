@@ -1,4 +1,6 @@
 <div class="game-container">
+  <h2>Scores: <strong>{{gameService.scores}}</strong>
+    <button (click)="gameService.resetGame()"  class="new-game-button">Start new game!</button></h2>
   <div class="grid-container">
     <div class="grid-row">
       <div class="grid-cell"></div>
@@ -32,4 +34,8 @@
       </div>
     </div>
   </div>
+</div>
+<div *ngIf="gameService.theEnd" class="overlay">
+  <div class="overlay-text">The end</div>
+  <button (click)="gameService.resetGame()"  class="new-game-button">Start new game!</button>
 </div>
